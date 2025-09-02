@@ -1,11 +1,13 @@
 # Azure SQL Database, Document to Vector ingestion pipeline Proof-of-concept
 
 ## Background
+
 This purpose of this project is to demonstrate a proof of concept pipeline for ingesting content stored in document form (pdf, docx, etc) into Azure SQL database, using the new vector support, for information retrieval.
 
 **Let us know what you think!** Create a GitHub issue for any bugs/feature requests.
 
 ### Pipeline stages
+
 The basic stages of the pipeline include:
 
 1. User uploads a file to Azure blob storage.
@@ -19,7 +21,9 @@ The basic stages of the pipeline include:
 ![pipleline](images/azuresql_pipeline.png "Pipeline")
 
 ### Technology choices
+
 Currently this proof of concept uses:
+
 * Azure Blob storage for upload of documents.
 * Azure Functions to process the pipeline.
 * Azure Application Insights for logging.
@@ -68,7 +72,7 @@ Currently this proof of concept uses:
 
     az deployment group create --name "${baseName}deploy" --resource-group $rg --template-file '.\deployment\main.bicep' -p .\deployment\main.bicepparam --parameters userPrincipalId=$adId baseName=$baseName
     ```
-    
+
     This step will likely take several minutes to complete - it will create all of the required Azure resources.
 
     NOTE: Some resource names must be globally unique. You can set a different base name for the created resources by altering the `baseName` variable value.    
@@ -78,11 +82,11 @@ Currently this proof of concept uses:
     1. Navigate to the Azure SQL database account created in the Azure Portal.
     1. Click on the `Query editor(preview)` blade.
     1. Execute the following query to allow the user managed identity that has been createed `<baseName>useridentity` to allow to access Azure SQL.
-    ``` SQL
+    ```sql
     CREATE USER [docaiuseridentity] FROM EXTERNAL PROVIDER;
     ALTER ROLE db_owner ADD MEMBER [docaiuseridentity];
     ```
-    1. See the image below:
+    3. See the image below:
 
     ![screenshot](images/azuresql_managedidentity.png "Enable vector search")
 
@@ -113,19 +117,21 @@ Currently this proof of concept uses:
     ```
 
 1. Monitor traces
+ 
     ```powershell
     # Monitor traces 
     echo "---> Monitoring Function Code"
     func azure functionapp logstream "${baseName}funcapp"
     ```
+ 
     Note - `func` above comes from the Azure Functions tools.  You can also view this log stream in the Azure Portal by navigating the the Azure Functions app created above, and clicking on the `Monitoring\Log Stream` blade.
 
 1. Upload documents to Azure blob storage account
     1. Navigate to the storage account created above (`docingblobacc` by default).
-    1. Click on the `Storage Browser` blade
-    1. Click on `Blob containers` and then the `documents` folder.
-    1. Click the `Upload` button in the toolbar, and then drag or browse to a document.
-    1. Check the event stream, and your Azure SQL database account. The document should be processed and ingested into a `document` table.
+    2. Click on the `Storage Browser` blade
+    3. Click on `Blob containers` and then the `documents` folder.
+    4. Click the `Upload` button in the toolbar, and then drag or browse to a document.
+    5. Check the event stream, and your Azure SQL database account. The document should be processed and ingested into a `document` table.
 
 1. Query data
 
