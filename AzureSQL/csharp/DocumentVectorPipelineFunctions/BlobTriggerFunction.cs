@@ -63,6 +63,12 @@ public class BlobTriggerFunction(
     {
         embeddingDimensions = configuration.GetValue<int>(AzureOpenAIModelDeploymentDimensionsName, DefaultDimensions);
         var connectionString = configuration.GetValue<string>(SqlConnectionString);
+
+        if (string.IsNullOrEmpty(connectionString))
+        {
+            throw new Exception($"Connection string '{SqlConnectionString}' not configured.");
+        }
+
         _logger.LogInformation("Using OpenAI model dimensions: '{embeddingDimensions}'.", embeddingDimensions);
 
         _logger.LogInformation("Analyzing document using DocumentAnalyzerService from blobUri: '{blobUri}' using layout: {layout}", blobClient.Name, "prebuilt-read");
@@ -137,7 +143,7 @@ public class BlobTriggerFunction(
                             {
                                 ChunkId = batchChunkTexts[index].ChunkNumber,
                                 DocumentUrl = blobClient.Uri.AbsoluteUri,
-                                Embedding = JsonSerializer.Serialize(embeddings[index].Vector),
+                                Embedding = JsonSerializer.Serialize(embeddings[index].ToFloats()),
                                 ChunkText = batchChunkTexts[index].Text,
                                 PageNumber = batchChunkTexts[index].PageNumberIfKnown,
                             };                           
@@ -154,7 +160,7 @@ public class BlobTriggerFunction(
         _logger.LogInformation("Finished processing blob {name}, total chunks processed {count}.", blobClient.Name, totalChunksCount);
     }
 
-    private async Task<EmbeddingCollection> GenerateEmbeddingsWithRetryAsync(IEnumerable<TextChunk> batchChunkTexts)
+    private async Task<OpenAIEmbeddingCollection> GenerateEmbeddingsWithRetryAsync(IEnumerable<TextChunk> batchChunkTexts)
     {
         EmbeddingGenerationOptions embeddingGenerationOptions = new()
         {

@@ -72,7 +72,7 @@ hostBuilder.ConfigureServices(sc =>
         // TODO: Implement a custom retry policy that takes the retry-after header into account.
         var options = new AzureOpenAIClientOptions()
         {
-            ApplicationId = "DocumentIngestion",
+            UserAgentApplicationId = "DocumentIngestion",
             RetryPolicy = new ClientRetryPolicy(maxRetries: 10),
         };
 
